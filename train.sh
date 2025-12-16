@@ -1,0 +1,19 @@
+python tap_train.py \
+--box-num 20 --box-range 10 80 --container-size 100 100 100 \
+--train 1 \
+--test-num 1 \
+--model 'tnpp' \
+--prec-type 'attn' \
+--fact-type 'tap_fake' \
+--data-type 'rand' \
+--ems-type 'ems-id' \
+--stable-rule 'hard_after_pack' \
+--rotate-axes 'x' 'y' 'z' \
+--hidden-dim 128 \
+--world-type 'real' \
+--container-type 'single' \
+--pack-type 'last' \
+--stable-predict 1 \
+--reward-type 'C' \
+--note 'train' \
+--device "cuda:0" \
