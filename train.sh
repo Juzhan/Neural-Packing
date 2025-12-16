@@ -1,4 +1,4 @@
-python tap_train.py \
+python main.py \
 --box-num 20 --box-range 10 80 --container-size 100 100 100 \
 --train 1 \
 --test-num 1 \

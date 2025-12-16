@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from tapnet.models.encoder import obs_to_tensor
+from models.encoder import obs_to_tensor
 
 class Greedy(nn.Module):
     def __init__(self, pack_type, container_height, device, *kwargs) -> None:

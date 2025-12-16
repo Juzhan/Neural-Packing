@@ -3,15 +3,22 @@
 <!-- [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) -->
 [![Paper](https://img.shields.io/badge/Paper-ACM%20TOG-red)](https://doi.org/10.1145/3618354)
 
-This repository is the official implementation of the paper **"Neural Packing: from Visual Sensing to Reinforcement Learning"** (ACM Transactions on Graphics, SIGGRAPH Asia 2023).
+
+![overview](./doc/overview.png)
+<!-- 
+<p align="center">
+  <img src="doc/overview.png" alt="Overview" width="800"/>
+  <br>****
+  Overview of the TAP-Net++ pipeline
+</p> -->
+
+This repository is the official implementation of the paper **"Neural Packing: from Visual Sensing to Reinforcement Learning"** (ACM Transactions on Graphics, SIGGRAPH Asia 2023). [arXiv link](https://arxiv.org/abs/2311.09233)
 
 We propose **TAP-Net++**, a learning-based framework to solve the 3D Transport-and-Packing (TAP) problem. Unlike previous methods, our approach handles the full pipeline from visual sensing of casually stacked objects to robotic packing, optimizing both object selection and placement location (EMS) simultaneously.
 
-<p align="center">
-  <img src="doc/overview.png" alt="Teaser Image" width="800"/>
-  <br>
-  <em>Overview of the TAP-Net++ pipeline</em>
-</p>
+For more details and materials, please refer to our [project page](https://vcc.tech/research/2023/TAPNet++).
+
+![network](./doc/network.png)
 
 ## 🚀 Installation
 
@@ -19,7 +26,7 @@ We propose **TAP-Net++**, a learning-based framework to solve the 3D Transport-a
 - Python 3.8+
 - PyTorch 1.10+
 - CUDA 11.3+ (for GPU acceleration)
-- **Blender 3.0+** (for visualization tools in `render/` directory)
+<!-- - **Blender 3.0+** (for visualization tools in `render/` directory) -->
 
 ### Dependencies
 Install required packages:
@@ -31,14 +38,14 @@ pip install -r requirements.txt
 
 **Option 2: Manual installation**
 ```bash
-pip install torch torchvision torchaudio
+pip install torch
 pip install gymnasium tianshou numpy matplotlib tqdm tensorboard scipy
 ```
-
+<!-- 
 **Note for visualization**: The `render/` directory uses Blender Python API (`bpy`) for 3D visualization. `bpy` comes with Blender installation and is not available via pip. To use visualization tools:
 1. Install Blender from [blender.org](https://www.blender.org/download/)
 2. Ensure Blender's Python includes the project dependencies
-3. Or run visualization scripts within Blender's built-in Python environment
+3. Or run visualization scripts within Blender's built-in Python environment -->
 
 ### Clone Repository
 ```bash
@@ -52,24 +59,24 @@ cd Neural-Packing
 To train the TAP-Net++ model with default parameters:
 
 ```bash
-python train.py
+./train.sh
 ```
 
 ### Testing
 To test a pre-trained model:
 
 ```bash
-python test.py
+./test.sh
 ```
 
 ## 📖 Usage
 
 ### Command Line Arguments
 
-The main training script `tap_train.py` supports numerous configuration options:
+The main training script `main.py` supports numerous configuration options:
 
 ```bash
-python tap_train.py --task tapnet/TAP-v0 \
+python main.py --task tapnet/TAP-v0 \
                     --model tnpp \
                     --box-num 20 \
                     --container-size 100 100 100 \
@@ -89,23 +96,27 @@ python tap_train.py --task tapnet/TAP-v0 \
 ```
 
 ### Key Parameters
-- `--model`: Model architecture (`tnpp`, `tn`, `greedy`)
-- `--fact-type`: Problem type (`tap_fake` for precedence-aware, `box` for standard packing)
+- `--model`: Model architecture, 'tnpp' means tap-net++ (`tnpp`, `tn`, `greedy`)
+- `--fact-type`: [Problem type](tap/envs/factory.py#L517) (`tap_fake` for precedence-aware, `box` for standard ordering packing)
 - `--prec-type`: Precedence encoding (`attn`, `cnn`, `rnn`, `none`)
+- `--data-type`: Data generation type (`rand` for random, `fix` for fixed, `ppsg` for Perfect Packing Strategy Guaranteed)
+- `--rotate-axes`: Allowed rotation axes (`x`, `y`, `z` combinations, e.g., only `z` for 90-degree rotations around Z-axis)
 - `--world-type`: Simulation type (`real` with stability, `ideal` without)
-- `--container-type`: `single` or `multi` container packing
+- `--container-type`: `single` or `multi` containers
+- `--pack-type`: Packing strategy (`all` for all containers, `last` for last container only)
+- `--stable-rule`: Stability rule (`hard_after_pack` for hard stability after packing)
 - `--stable-predict`: Whether to predict stability (0 or 1)
-- `--reward-type`: Reward formulation (`C` for compactness, `E` for step reward, etc.)
+- `--reward-type`: Reward formulation (`C` for compactness, `E` for each step reward, etc.)
 
 ## 🧠 Algorithm Overview
 
 ### TAP-Net++ Architecture
 
-TAP-Net++ consists of three main components:
+[TAP-Net++](models/network.py#L39) consists of three main components:
 
-1. **Object Encoder**: Encodes box dimensions and precedence relationships
-2. **Space Encoder**: Encodes Empty Maximum Spaces (EMS) for placement
-3. **Cross-Transformer**: Learns interactions between objects and spaces
+1. **[Object Encoder](models/encoder.py#L242)**: Encodes box dimensions and precedence relationships
+2. **[Space Encoder](models/encoder.py#L177)**: Encodes Empty Maximum Spaces (EMS) for placement
+3. **[Cross-Transformer](models/attention.py#L357)**: Learns interactions between objects and spaces
 
 ### Reinforcement Learning Formulation
 
@@ -117,12 +128,10 @@ TAP-Net++ consists of three main components:
 
 ```
 Neural-Packing/
-├── tap_train.py              # Main training script with argument parsing
-├── train.py                  # Simplified training script
-├── test.py                   # Testing script
+├── main.py              # Main training script with argument parsing
 ├── test.sh                   # Shell script for testing
 ├── train.sh                  # Shell script for training
-├── tapnet/                   # Core package
+├── tap/                   # Core package
 │   ├── __init__.py
 │   ├── gym_tap.py            # Gymnasium environment registration
 │   ├── envs/                 # Environment implementation
@@ -133,24 +142,23 @@ Neural-Packing/
 │   │   ├── ems_tools.py      # EMS computation utilities
 │   │   ├── convex_hull.py    # Geometry utilities
 │   │   └── space.py          # Space representation
-│   └── models/               # Neural network models
-│       ├── __init__.py
-│       ├── network.py        # Main TAP-Net++ architecture
-│       ├── attention.py      # Cross-transformer implementation
-│       ├── encoder.py        # Object and space encoders
-│       ├── policy.py         # Policy networks
-│       ├── greedy.py         # Greedy baseline
-│       └── old.py            # Legacy models
+├── models/               # Neural network models
+│   ├── __init__.py
+│   ├── network.py        # Main TAP-Net++ architecture
+│   ├── attention.py      # Cross-transformer implementation
+│   ├── encoder.py        # Object and space encoders
+│   ├── greedy.py         # Greedy baseline
+│   └── old.py            # Legacy models [TAP-Net]
 ├── render/                   # Visualization tools
-│   ├── render_scripts.py
+├── checkpoints/             # Saved model checkpoints
+└── README.md               # This file
+```
+<!-- │   ├── render_scripts.py
 │   ├── render_tools.py
 │   ├── sim_tools.py
 │   ├── tools.py
 │   └── results/
-│       └── plot.py          # Plotting utilities
-├── checkpoints/             # Saved model checkpoints
-└── README.md               # This file
-```
+│       └── plot.py          # Plotting utilities -->
 
 ## 🏋️ Training
 
@@ -168,7 +176,7 @@ tensorboard --logdir ./log
 ```
 
 ### Hyperparameters
-Default training parameters (can be adjusted in `tap_train.py`):
+Default training parameters (can be adjusted in `main.py`):
 - Learning rate: 3e-4
 - Buffer size: 2048
 - Batch size: 128
@@ -186,14 +194,107 @@ Default training parameters (can be adjusted in `tap_train.py`):
 
 ### Running Tests
 ```bash
-python tap_train.py --train 0 --resume-path ./checkpoints/policy.pth
+python main.py --train 0 --resume-path ./checkpoints/policy.pth
 ```
 
-## 📊 Results
+## TAP Benchmark
+
+### Benchmark Data Generation
+
+We provide a data generation script to create benchmark datasets for evaluating TAP-Net++ performance across different data types. The script generates three types of box data:
+
+1. **Random (rand)**: Randomly generated boxes within the specified size range
+2. **Fixed (fix)**: Boxes sampled from a fixed set of candidate boxes
+3. **Perfect Packing Strategy Guaranteed (ppsg)**: Boxes generated using perfect packing strategy
+
+#### Generating Benchmark Data
+
+Use the `gen_benchmark.py` script to create benchmark datasets:
+
+```bash
+python gen_benchmark.py --num-samples 100 --output-dir ./benchmark_data
+```
+
+This will generate 100 samples for each data type (rand, fix, ppsg) using default parameters from `main.py`:
+
+- Container size: [100, 100, 100]
+- Box range: [10, 80]
+- Box number: 20
+- Fact type: tap_fake
+- Other parameters: Default values from main.py
+
+#### Data Structure
+
+Generated data is saved in the following directory structure:
+```
+benchmark_data/
+├── tap_fake/
+│   ├── rand/
+│   │   └── 20/
+│   │       └── [100_100]_[10_80]_10/
+│   │           ├── 0_box.npy
+│   │           ├── 0_pre.npy
+│   │           ├── 1_box.npy
+│   │           ├── 1_pre.npy
+│   │           ├── ...
+│   │           └── metadata.npy
+│   ├── fix/
+│   │   └── ...
+│   └── ppsg/
+│       └── ...
+```
+
+Each sample consists of:
+- `{index}_box.npy`: Box dimensions (list of [width, length, height] for each box)
+- `{index}_pre.npy`: Precedence graph for tap_fake fact type
+- `metadata.npy`: Configuration metadata for the dataset
+
+
+#### Customizing Data Generation
+
+You can customize the data generation by modifying the script arguments:
+
+```bash
+# Generate only specific data types
+python gen_benchmark.py --data-types rand fix
+
+# Generate different number of samples
+python gen_benchmark.py --num-samples 500
+
+# Specify custom output directory
+python gen_benchmark.py --output-dir ./my_benchmark_data
+```
+
+<!-- #### Using Benchmark Data
+
+To use the generated benchmark data in training or evaluation, specify the `--fact-data-folder` argument in `main.py`:
+
+```bash
+python main.py --train 1 \
+               --data-type rand \
+               --fact-data-folder ./benchmark_data/tap_fake/rand/20/[100_100]_[10_80]_10
+```
+
+The environment will automatically load pre-generated data from the specified folder instead of generating new data on-the-fly. -->
+
+<!-- #### Benchmark Evaluation
+
+To evaluate models on the benchmark datasets, run:
+
+```bash
+python main.py --train 0 \
+               --data-type rand \
+               --fact-data-folder ./benchmark_data/tap_fake/rand/20/[100_100]_[10_80]_10 \
+               --resume-path ./checkpoints/policy.pth
+```
+
+This ensures consistent evaluation across different runs and facilitates fair comparison between different model configurations. -->
+
+<!-- ## 📊 Results
 
 
 ### Visualization
-The `render/` directory contains tools for visualizing packing sequences and results.
+The `render/` directory contains tools for visualizing packing sequences and results. -->
 
 ## 🔗 Citation
 

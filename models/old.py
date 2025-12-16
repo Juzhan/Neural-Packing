@@ -1,8 +1,10 @@
+# TAP-Net version
+
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from tapnet.models.attention import SelfAttention
-from tapnet.models.encoder import obs_to_tensor, ObjectEncoder, HeightmapEncoder
+from models.encoder import obs_to_tensor, ObjectEncoder, HeightmapEncoder
 
 class PackDecoder(nn.Module):
     def __init__(self, hidden_dim, heightmap_width, heightmap_length, device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')):

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
-from tapnet.models.attention import TransformerBlock
+from models.attention import TransformerBlock
 
 
 def obs_to_tensor(obs, device):

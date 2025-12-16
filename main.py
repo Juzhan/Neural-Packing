@@ -1,7 +1,7 @@
 import IPython
 import gymnasium as gym
 import numpy as np
-import tapnet
+import tap
 import tianshou as ts
 import os
 
@@ -19,7 +19,7 @@ from tianshou.data import Batch
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--task", type=str, default="tapnet/TAP-v0")
+    parser.add_argument("--task", type=str, default="tap/TAP-v0")
     
     parser.add_argument("--model", type=str, default='tnpp') # tnpp, tn, greedy
 
@@ -29,7 +29,7 @@ def get_args():
 
     parser.add_argument("--box-num", type=int, default=20)
     parser.add_argument("--container-size", type=int, nargs="*", default=[100, 100, 100])
-    parser.add_argument("--box-range", type=int, nargs="*", default=[10, 60])
+    parser.add_argument("--box-range", type=int, nargs="*", default=[10, 80])
 
     parser.add_argument("--save", type=int, default=0)
 
@@ -41,17 +41,10 @@ def get_args():
     parser.add_argument("--ems-type", type=str, default='ems-id')
     parser.add_argument("--gripper-size", type=int, nargs="*", default=None)
 
-    # parser.add_argument("--fact-type", type=str, default='box')  # box / tap_fake
-    # parser.add_argument("--data-type", type=str, default='rand')
-    # parser.add_argument("--prec-type", type=str, default='none')
-    # parser.add_argument("--rotate-axes", type=str, nargs="*", default=['z'])
-    # parser.add_argument("--ems-type", type=str, default='ems-id-stair')
-    # parser.add_argument("--gripper-size", type=int, nargs="*", default=[40,40,70])
-
     parser.add_argument("--require-box-num", type=int, default=0)
 
     parser.add_argument("--world-type", type=str, default='real') # ideal / real，ideal不考虑稳定性，real考虑
-    parser.add_argument("--container-type", type=str, default='multi') # single / multi
+    parser.add_argument("--container-type", type=str, default='single') # single / multi
     parser.add_argument("--stable-rule", type=str, default="hard_after_pack")  # hard 为强制位姿稳定
     parser.add_argument("--pack-type", type=str, default='all') # all / last 
     parser.add_argument("--stable-predict", type=int, default=1) # 是否预测稳定性
@@ -67,16 +60,6 @@ def get_args():
 
     parser.add_argument("--note", type=str, default='debug')
     parser.add_argument("--seed", type=int, default=666)
-
-    # parser.add_argument("--buffer-size", type=int, default=1000)
-    # parser.add_argument("--max-epoch", type=int, default=200)
-    # parser.add_argument("--step-per-epoch", type=int, default=1000)
-    # parser.add_argument("--step-per-collect", type=int, default=200)
-    # parser.add_argument("--repeat-per-collect", type=int, default=10)
-    # parser.add_argument("--episode-per-test", type=int, default=10)
-    # parser.add_argument("--batch-size", type=int, default=128)
-    # parser.add_argument("--train-num", type=int, default=1)
-    # parser.add_argument("--test-num", type=int, default=1)
 
     parser.add_argument("--buffer-size", type=int, default=2048)
     parser.add_argument("--max-epoch", type=int, default=100)
@@ -175,19 +158,19 @@ def get_policy(args):
 
     if args.model == 'tnpp':
 
-        from tapnet.models.network import Net, Critic
+        from models.network import Net, Critic
         actor = Net(box_dim, ems_dim, args.hidden_dim, prec_dim, args.prec_type, args.stable_predict, device).to(device)
         critic = Critic( box_dim, ems_dim, box_state_num, max_ems_num, args.hidden_dim, prec_dim, args.prec_type, device=device).to(device)
         args.action_type = 'box-ems'
 
     elif args.model == 'greedy':
-        from tapnet.models.greedy import Greedy, Critic
+        from models.greedy import Greedy, Critic
         actor = Greedy( pack_type=args.pack_type, container_height=args.container_size[2], device=device).to(device)
         critic = Critic(device=device).to(device)
         args.action_type = 'box-ems'
     
     elif args.model == 'tn':
-        from tapnet.models.old import Net, Critic
+        from models.old import Net, Critic
         actor = Net(args.prec_type, box_dim, prec_dim, args.hidden_dim, args.container_size[0], args.container_size[1], 200, device).to(device)
         critic = Critic( box_dim, box_state_num, prec_dim, args.container_size[0], args.container_size[1], args.hidden_dim, prec_type=args.prec_type, device=device).to(device)
         args.action_type = 'box'

@@ -1,4 +1,6 @@
-./log/*
+log/*
+*benchmark_data/*
+
 # ========== Python 解释器缓存 ==========
 __pycache__/
 *.py[cod]

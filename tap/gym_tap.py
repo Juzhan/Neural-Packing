@@ -10,7 +10,7 @@ from matplotlib.path import Path
 import gymnasium as gym
 from tqdm import tqdm
 
-import tapnet
+import tap
 
 
 def reorder(boxes, box_ids, box_areas, order_type='rand'):
@@ -142,7 +142,7 @@ class TAPer:
         if prec_type == 'cnn':
             prec_dim = max_box_num * prec_dim
 
-        from tapnet.models.network import Actor
+        from models.network import Actor
         actor = Actor(box_dim, ems_dim, hidden_dim, prec_dim, prec_type, stable_predict, device)
         actor = actor.to(device)
 

@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from tapnet.models.attention import CrossTransformer, CrossLayer
-from tapnet.models.encoder import obs_to_tensor, ObjectEncoder, SpaceEncoder
+from models.attention import CrossTransformer
+from models.encoder import obs_to_tensor, ObjectEncoder, SpaceEncoder
 
 class StrategyAttention(nn.Module):
     def __init__(self, encoder_type, box_dim, ems_dim, hidden_dim, prec_dim, corner_num, stable_predict=False, device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')):
